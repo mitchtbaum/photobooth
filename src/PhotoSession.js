@@ -1,6 +1,7 @@
 // @flow
+import PhotoSet from './PhotoSet';
 import PhotoTimer from './PhotoTimer';
-import { Button, Image, StyleSheet, View } from 'react-native';
+import { Button, StyleSheet, View } from 'react-native';
 import React, { Component } from 'react';
 
 import type { $ImageCapture } from './types';
@@ -23,6 +24,7 @@ const BETWEEN_TAKE_DELAY_MS = 1000;
 
 export default class PhotoSession extends Component<PhotoSessionProps, PhotoSessionState> {
   _timer: PhotoTimer;
+  _photoset: PhotoSet;
 
   static defaultProps = {
     countdownMS: 2000,
@@ -49,14 +51,14 @@ export default class PhotoSession extends Component<PhotoSessionProps, PhotoSess
     const { imageURLs } = this.state;
     return (
       <View style={styles.root}>
-        <View style={styles.timer}>
+        <View style={styles.timer} pointerEvents="none">
           {imageURLs.length >= numPhotos ? (
             <Button onPress={this._handleComplete} title="Done" />
           ) : (
             <PhotoTimer onTakePhoto={this._handleTakePhoto} ref={this._receiveTimerRef} />
           )}
         </View>
-        {imageURLs.map((url, i) => <Image key={i} source={url} style={styles.image} />)}
+        <PhotoSet downloadable={imageURLs.length === numPhotos} imageURLs={imageURLs} />
       </View>
     );
   }
