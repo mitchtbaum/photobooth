@@ -31,21 +31,25 @@ export default class App extends Component<AppProps, AppState> {
     const { imageCapture, images, takingPhotos } = this.state;
     return (
       <View style={styles.root}>
-        {takingPhotos ? (
-          <View>
-            <PhotoTimer
-              imageCapture={imageCapture}
-              onComplete={this._handleComplete}
-              onPhotoTaken={this._handlePhotoTaken}
-            />
-          </View>
-        ) : (
-          <View>
-            <Button onPress={this._handleSessionStart} title="New Session" />
-            {imageCapture ? <Preview imageCapture={imageCapture} /> : null}
-          </View>
-        )}
-        {images.map((image, i) => <Image key={i} source={{ uri: image, width: 200, height: 150 }} />)}
+        <View style={styles.container}>
+          {takingPhotos ? (
+            <View style={styles.content}>
+              <PhotoTimer
+                imageCapture={imageCapture}
+                onComplete={this._handleComplete}
+                onPhotoTaken={this._handlePhotoTaken}
+              />
+            </View>
+          ) : (
+            <View style={styles.content}>
+              <View style={styles.startButton}>
+                <Button onPress={this._handleSessionStart} title="New Session" />
+              </View>
+              {imageCapture ? <Preview imageCapture={imageCapture} /> : null}
+            </View>
+          )}
+          {images.map((image, i) => <Image key={i} source={{ uri: image, width: 200, height: 150 }} />)}
+        </View>
       </View>
     );
   }
@@ -59,11 +63,15 @@ export default class App extends Component<AppProps, AppState> {
   };
 
   _handleComplete = (images: Array<string>) => {
+    this._resetImageCapture();
+  };
+
+  _resetImageCapture() {
     if (this.state.imageCapture) {
       this.state.imageCapture.track.stop();
     }
     this._createImageCapture();
-  };
+  }
 
   _createImageCapture() {
     window.navigator.mediaDevices.getUserMedia({ video: true }).then((mediaStream) => {
@@ -76,6 +84,22 @@ export default class App extends Component<AppProps, AppState> {
 const styles = StyleSheet.create({
   root: {
     height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  container: {
+    height: '600px',
+    width: '800px'
+  },
+  content: {
+    flexGrow: 1,
+    height: '100%'
+  },
+  startButton: {
+    position: 'absolute',
+    zIndex: 1,
+    height: '100%',
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center'
   }
