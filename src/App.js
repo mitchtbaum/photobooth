@@ -15,8 +15,6 @@ type AppState = {
 };
 
 export default class App extends Component<AppProps, AppState> {
-  _imageCapture: any;
-
   constructor(props: AppProps, context: any) {
     super(props, context);
     this.state = {
@@ -26,10 +24,7 @@ export default class App extends Component<AppProps, AppState> {
   }
 
   componentDidMount() {
-    window.navigator.mediaDevices.getUserMedia({ video: true }).then((mediaStream) => {
-      const track = mediaStream.getVideoTracks()[0];
-      this.setState({ imageCapture: new window.ImageCapture(track) });
-    });
+    this._createImageCapture();
   }
 
   render() {
@@ -47,7 +42,7 @@ export default class App extends Component<AppProps, AppState> {
         ) : (
           <View>
             <Button onPress={this._handleSessionStart} title="New Session" />
-            {imageCapture ? <Preview imageCapture={this.state.imageCapture} /> : null}
+            {imageCapture ? <Preview imageCapture={imageCapture} /> : null}
           </View>
         )}
         {images.map((image, i) => <Image key={i} source={{ uri: image, width: 200, height: 150 }} />)}
@@ -64,15 +59,18 @@ export default class App extends Component<AppProps, AppState> {
   };
 
   _handleComplete = (images: Array<string>) => {
-    this.setState({ takingPhotos: false });
+    if (this.state.imageCapture) {
+      this.state.imageCapture.track.stop();
+    }
+    this._createImageCapture();
   };
 
-  _endSession = () => {
-    if (this._imageCapture) {
-      this._imageCapture.track.stop();
-      this._imageCapture = null;
-    }
-  };
+  _createImageCapture() {
+    window.navigator.mediaDevices.getUserMedia({ video: true }).then((mediaStream) => {
+      const track = mediaStream.getVideoTracks()[0];
+      this.setState({ imageCapture: new window.ImageCapture(track), takingPhotos: false });
+    });
+  }
 }
 
 const styles = StyleSheet.create({

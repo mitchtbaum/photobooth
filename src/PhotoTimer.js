@@ -26,9 +26,9 @@ export default class PhotoTimer extends Component<PhotoTimerProps, PhotoTimerSta
   _text: ?Text;
 
   static defaultProps = {
-    countdownMS: 5000,
+    countdownMS: 2000,
     imageCount: 4,
-    initialCountdownMS: 10000
+    initialCountdownMS: 3000
   };
 
   constructor(props: PhotoTimerProps, context: any) {
