@@ -1,6 +1,6 @@
 // @flow
 import Preview from './Preview';
-import PhotoTimer from './PhotoTimer';
+import PhotoSession from './PhotoSession';
 import { Button, Image, StyleSheet, View } from 'react-native';
 import React, { Component } from 'react';
 
@@ -34,11 +34,7 @@ export default class App extends Component<AppProps, AppState> {
         <View style={styles.container}>
           {takingPhotos ? (
             <View style={styles.content}>
-              <PhotoTimer
-                imageCapture={imageCapture}
-                onComplete={this._handleComplete}
-                onPhotoTaken={this._handlePhotoTaken}
-              />
+              <PhotoSession imageCapture={imageCapture} />
             </View>
           ) : (
             <View style={styles.content}>
@@ -74,10 +70,18 @@ export default class App extends Component<AppProps, AppState> {
   }
 
   _createImageCapture() {
-    window.navigator.mediaDevices.getUserMedia({ video: true }).then((mediaStream) => {
-      const track = mediaStream.getVideoTracks()[0];
-      this.setState({ imageCapture: new window.ImageCapture(track), takingPhotos: false });
-    });
+    window.navigator.mediaDevices
+      .getUserMedia({
+        video: {
+          // facingMode: 'user',
+          height: { min: 776, ideal: 720, max: 1080 },
+          width: { min: 1024, ideal: 1280, max: 1920 }
+        }
+      })
+      .then((mediaStream) => {
+        const track = mediaStream.getVideoTracks()[0];
+        this.setState({ imageCapture: new window.ImageCapture(track), takingPhotos: false });
+      });
   }
 }
 
