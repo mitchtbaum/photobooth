@@ -1,0 +1,14 @@
+[ignore]
+
+[include]
+src/*
+
+[libs]
+flow-typed
+
+[lints]
+
+[options]
+module.name_mapper='^react-native$' -> 'react-native-web'
+
+[strict]
