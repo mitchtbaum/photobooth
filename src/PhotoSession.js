@@ -1,23 +1,27 @@
 // @flow
 import PhotoTimer from './PhotoTimer';
-import { Image, StyleSheet, View } from 'react-native';
+import { Button, Image, StyleSheet, View } from 'react-native';
 import React, { Component } from 'react';
 
 import type { $ImageCapture } from './types';
 
 type PhotoSessionProps = {
+  countdownMS: number,
+  imageCapture: $ImageCapture,
+  initialCountdownMS: number,
   numPhotos: number,
-  onComplete?: (imageURLs: Array<string>, imageBlobs: Array<blob>) => void,
-  onPhotoTaken?: (imageURL: string, imageBlob: blob) => void
+  onComplete?: (imageURLs: Array<string>, imageBlobs: Array<Blob>) => void,
+  onPhotoTaken?: (imageURL: string, imageBlob: Blob) => void
 };
 
 type PhotoSessionState = {
-  imageBlobs: Array<blob>,
+  imageBlobs: Array<Blob>,
   imageURLs: Array<string>
 };
 
+const BETWEEN_TAKE_DELAY_MS = 1000;
+
 export default class PhotoSession extends Component<PhotoSessionProps, PhotoSessionState> {
-  _imageCapture: $ImageCapture;
   _timer: PhotoTimer;
 
   static defaultProps = {
@@ -35,43 +39,37 @@ export default class PhotoSession extends Component<PhotoSessionProps, PhotoSess
   }
 
   componentDidMount() {
-    window.navigator.mediaDevices
-      .getUserMedia({
-        video: {
-          // facingMode: 'user',
-          // height: { min: 776, ideal: 720, max: 1080 },
-          // width: { min: 1024, ideal: 1280, max: 1920 }
-        }
-      })
-      .then((mediaStream) => {
-        const track = mediaStream.getVideoTracks()[0];
-        this._imageCapture = new window.ImageCapture(track);
-        if (this._timer) {
-          this._timer.start(this.props.initialCountdownMS);
-        }
-      });
+    if (this._timer) {
+      this._timer.start(this.props.initialCountdownMS);
+    }
   }
 
   render() {
+    const { numPhotos } = this.props;
     const { imageURLs } = this.state;
     return (
       <View style={styles.root}>
-        <PhotoTimer onTakePhoto={this._handleTakePhoto} ref={this._receiveTimerRef} />
+        <View style={styles.timer}>
+          {imageURLs.length >= numPhotos ? (
+            <Button onPress={this._handleComplete} title="Done" />
+          ) : (
+            <PhotoTimer onTakePhoto={this._handleTakePhoto} ref={this._receiveTimerRef} />
+          )}
+        </View>
         {imageURLs.map((url, i) => <Image key={i} source={url} style={styles.image} />)}
       </View>
     );
   }
 
-  _receiveTimerRef = (ref) => {
+  _receiveTimerRef = (ref: ?any) => {
     if (ref) {
       this._timer = ref;
     }
   };
 
   _handleTakePhoto = () => {
-    const { countdownMS, numPhotos, onComplete, onPhotoTaken } = this.props;
-    console.info('taking photo');
-    this._imageCapture
+    const { countdownMS, imageCapture, numPhotos, onPhotoTaken } = this.props;
+    imageCapture
       .takePhoto()
       .then((blob) => {
         const imageURL = URL.createObjectURL(blob);
@@ -82,9 +80,9 @@ export default class PhotoSession extends Component<PhotoSessionProps, PhotoSess
           const nextImageURLs = [...imageURLs, imageURL];
           const shouldTakeAnotherPhoto = nextImageURLs.length < numPhotos;
           if (shouldTakeAnotherPhoto) {
-            this._timer.start(countdownMS);
-          } else {
-            onComplete && onComplete();
+            setTimeout(() => {
+              this._timer.start(countdownMS);
+            }, BETWEEN_TAKE_DELAY_MS);
           }
           return {
             imageBlobs: nextImageBlobs,
@@ -97,15 +95,31 @@ export default class PhotoSession extends Component<PhotoSessionProps, PhotoSess
       });
   };
 
-  _handleTimerComplete = () => {};
+  _handleComplete = () => {
+    const { onComplete } = this.props;
+    const { imageBlobs, imageURLs } = this.state;
+    onComplete && onComplete(imageURLs, imageBlobs);
+  };
 }
 
 const styles = StyleSheet.create({
   root: {
+    height: '100%',
+    flexGrow: 1,
     flexDirection: 'row',
     flexWrap: 'wrap'
   },
   image: {
-    flexGrow: 0.5
+    width: '50%',
+    height: '50%'
+  },
+  timer: {
+    position: 'absolute',
+    zIndex: 1,
+    height: '100%',
+    width: '100%',
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 });

@@ -1,7 +1,7 @@
 // @flow
 import Preview from './Preview';
 import PhotoSession from './PhotoSession';
-import { Button, Image, StyleSheet, View } from 'react-native';
+import { Button, StyleSheet, View } from 'react-native';
 import React, { Component } from 'react';
 
 import type { $ImageCapture } from './types';
@@ -10,7 +10,6 @@ type AppProps = {};
 
 type AppState = {
   imageCapture?: $ImageCapture,
-  images: Array<string>,
   takingPhotos: boolean
 };
 
@@ -18,7 +17,6 @@ export default class App extends Component<AppProps, AppState> {
   constructor(props: AppProps, context: any) {
     super(props, context);
     this.state = {
-      images: [],
       takingPhotos: false
     };
   }
@@ -28,13 +26,13 @@ export default class App extends Component<AppProps, AppState> {
   }
 
   render() {
-    const { imageCapture, images, takingPhotos } = this.state;
+    const { imageCapture, takingPhotos } = this.state;
     return (
       <View style={styles.root}>
         <View style={styles.container}>
           {takingPhotos ? (
             <View style={styles.content}>
-              <PhotoSession imageCapture={imageCapture} />
+              <PhotoSession imageCapture={imageCapture} onComplete={this._handleComplete} />
             </View>
           ) : (
             <View style={styles.content}>
@@ -44,22 +42,17 @@ export default class App extends Component<AppProps, AppState> {
               {imageCapture ? <Preview imageCapture={imageCapture} /> : null}
             </View>
           )}
-          {images.map((image, i) => <Image key={i} source={{ uri: image, width: 200, height: 150 }} />)}
         </View>
       </View>
     );
   }
 
   _handleSessionStart = () => {
-    this.setState({ images: [], takingPhotos: true });
-  };
-
-  _handlePhotoTaken = (image: string) => {
-    this.setState(({ images }) => ({ images: [...images, image] }));
+    this.setState({ takingPhotos: true });
   };
 
   _handleComplete = (images: Array<string>) => {
-    this._resetImageCapture();
+    this.setState({ takingPhotos: false }, this._resetImageCapture);
   };
 
   _resetImageCapture() {
@@ -72,11 +65,7 @@ export default class App extends Component<AppProps, AppState> {
   _createImageCapture() {
     window.navigator.mediaDevices
       .getUserMedia({
-        video: {
-          // facingMode: 'user',
-          height: { min: 776, ideal: 720, max: 1080 },
-          width: { min: 1024, ideal: 1280, max: 1920 }
-        }
+        video: { facingMode: 'user' }
       })
       .then((mediaStream) => {
         const track = mediaStream.getVideoTracks()[0];

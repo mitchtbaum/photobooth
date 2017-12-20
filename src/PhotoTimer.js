@@ -1,7 +1,7 @@
 // @flow
 import ReactDOM from 'react-dom';
-import { Text } from 'react-native';
 import React, { Component } from 'react';
+import { StyleSheet, Text } from 'react-native';
 
 type PhotoTimerProps = {
   onTakePhoto: () => void
@@ -36,7 +36,7 @@ export default class PhotoTimer extends Component<PhotoTimerProps, PhotoTimerSta
 
   render() {
     const { nextPhotoAt } = this.state;
-    return nextPhotoAt > 0 ? <Text ref={this._receiveRef} /> : null;
+    return nextPhotoAt > 0 ? <Text ref={this._receiveRef} style={styles.text} /> : null;
   }
 
   _receiveRef = (ref: ?any) => {
@@ -63,3 +63,13 @@ export default class PhotoTimer extends Component<PhotoTimerProps, PhotoTimerSta
     }
   };
 }
+
+const styles = StyleSheet.create({
+  text: {
+    color: 'white',
+    fontSize: '4rem',
+    textShadowColor: 'black',
+    textShadowOffset: { height: 0, width: 0 },
+    textShadowRadius: 6
+  }
+});
