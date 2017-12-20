@@ -1,7 +1,7 @@
 // @flow
 import Preview from './Preview';
-import Session from './Session';
-import { Button, StyleSheet, View } from 'react-native';
+import PhotoTimer from './PhotoTimer';
+import { Button, Image, StyleSheet, View } from 'react-native';
 import React, { Component } from 'react';
 
 import type { $ImageCapture } from './types';
@@ -10,7 +10,8 @@ type AppProps = {};
 
 type AppState = {
   imageCapture?: $ImageCapture,
-  inSession: boolean
+  images: Array<string>,
+  takingPhotos: boolean
 };
 
 export default class App extends Component<AppProps, AppState> {
@@ -19,7 +20,8 @@ export default class App extends Component<AppProps, AppState> {
   constructor(props: AppProps, context: any) {
     super(props, context);
     this.state = {
-      inSession: false
+      images: [],
+      takingPhotos: false
     };
   }
 
@@ -31,27 +33,38 @@ export default class App extends Component<AppProps, AppState> {
   }
 
   render() {
-    const { imageCapture, inSession } = this.state;
+    const { imageCapture, images, takingPhotos } = this.state;
     return (
       <View style={styles.root}>
-        {inSession ? (
-          <Session imageCapture={imageCapture} onComplete={this._handleSessionComplete} />
+        {takingPhotos ? (
+          <View>
+            <PhotoTimer
+              imageCapture={imageCapture}
+              onComplete={this._handleComplete}
+              onPhotoTaken={this._handlePhotoTaken}
+            />
+          </View>
         ) : (
           <View>
             <Button onPress={this._handleSessionStart} title="New Session" />
             {imageCapture ? <Preview imageCapture={this.state.imageCapture} /> : null}
           </View>
         )}
+        {images.map((image, i) => <Image key={i} source={{ uri: image, width: 200, height: 150 }} />)}
       </View>
     );
   }
 
   _handleSessionStart = () => {
-    this.setState({ inSession: true });
+    this.setState({ images: [], takingPhotos: true });
   };
 
-  _handleSessionComplete = () => {
-    this.setState({ inSession: false });
+  _handlePhotoTaken = (image: string) => {
+    this.setState(({ images }) => ({ images: [...images, image] }));
+  };
+
+  _handleComplete = (images: Array<string>) => {
+    this.setState({ takingPhotos: false });
   };
 
   _endSession = () => {
