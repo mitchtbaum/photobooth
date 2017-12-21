@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import type { $ImageCapture } from './types';
+import type { $ImageCapture } from '../types';
 
 type PreviewProps = {
   imageCapture: $ImageCapture

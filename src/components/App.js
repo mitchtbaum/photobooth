@@ -4,7 +4,7 @@ import PhotoSession from './PhotoSession';
 import { Button, StyleSheet, View } from 'react-native';
 import React, { Component } from 'react';
 
-import type { $ImageCapture } from './types';
+import type { $ImageCapture } from '../types';
 
 type AppProps = {};
 
