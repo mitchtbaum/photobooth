@@ -4,11 +4,11 @@ import { StyleSheet, View } from 'react-native';
 
 import type { $ImageCapture } from '../types';
 
-type PreviewProps = {
+type Props = {
   imageCapture: $ImageCapture
 };
 
-export default class Preview extends Component<PreviewProps> {
+export default class Preview extends Component<Props> {
   _ctx: CanvasRenderingContext2D;
   _width: number;
 

@@ -6,15 +6,15 @@ import React, { Component } from 'react';
 
 import type { $ImageCapture } from '../types';
 
-type AppProps = {};
+type Props = {};
 
-type AppState = {
+type State = {
   imageCapture?: $ImageCapture,
   takingPhotos: boolean
 };
 
-export default class App extends Component<AppProps, AppState> {
-  constructor(props: AppProps, context: any) {
+export default class App extends Component<Props, State> {
+  constructor(props: Props, context: any) {
     super(props, context);
     this.state = {
       takingPhotos: false

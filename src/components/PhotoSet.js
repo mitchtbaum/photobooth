@@ -1,67 +1,68 @@
 // @flow
-import { Button, StyleSheet, View } from 'react-native';
+import Link from './Link';
+import { StyleSheet, View } from 'react-native';
 import React, { Component } from 'react';
 
-type PhotoSetProps = {
+type Props = {
   downloadable: boolean,
   imageURLs: Array<string>
 };
 
-type PhotoSetState = {
-  drawn: boolean
+type State = {
+  drawCount: number
 };
 
-export default class PhotoSet extends Component<PhotoSetProps, PhotoSetState> {
+const WIDTH = 1600;
+const HEIGHT = 2400;
+
+export default class PhotoSet extends Component<Props, State> {
   _ref: HTMLCanvasElement;
   _ctx: CanvasRenderingContext2D;
-  _width: number;
-  _height: number;
 
   static defaultProps = {
     downloadable: false
   };
 
-  constructor(props: PhotoSetProps, context: any) {
+  constructor(props: Props, context: any) {
     super(props, context);
-    this.state = { drawn: false };
+    this.state = { drawCount: 0 };
   }
 
-  componentWillReceiveProps(nextProps: PhotoSetProps) {
+  componentWillReceiveProps(nextProps: Props) {
     if (nextProps.imageURLs !== this.props.imageURLs) {
-      this.setState({ drawn: false });
+      this.setState({ drawCount: 0 });
     }
   }
 
-  componentDidUpdate(prevProps: PhotoSetProps) {
+  componentDidUpdate(prevProps: Props) {
     if (this.props.imageURLs !== prevProps.imageURLs) {
       this._draw();
     }
   }
 
+  componentDidMount() {
+    this._draw();
+  }
+
   render() {
-    const { drawn } = this.state;
-    const { downloadable } = this.props;
+    const { drawCount } = this.state;
+    const { downloadable, imageURLs } = this.props;
     return (
       <View style={styles.root}>
-        {downloadable && drawn ? (
-          <a download="photobooth.jpg" href={this.toDataURL()}>
+        {downloadable && drawCount === imageURLs.length ? (
+          <Link download="photobooth.jpg" href={this.toDataURL()} isButton>
             Download
-          </a>
+          </Link>
         ) : null}
-        <canvas ref={this._receiveRef} />
+        <View style={styles.canvas}>
+          <canvas ref={this._receiveRef} height={HEIGHT} width={WIDTH} />
+        </View>
       </View>
     );
   }
 
   _receiveRef = (ref: ?HTMLCanvasElement) => {
     if (!this._ctx && ref) {
-      const parent = ref.parentElement;
-      // $FlowFixMe
-      ref.width = parent.offsetWidth;
-      // $FlowFixMe
-      ref.height = parent.offsetHeight;
-      this._width = ref.width;
-      this._height = ref.height;
       this._ctx = ref.getContext('2d');
       this._ref = ref;
     }
@@ -69,14 +70,15 @@ export default class PhotoSet extends Component<PhotoSetProps, PhotoSetState> {
 
   _draw = () => {
     const { imageURLs } = this.props;
-    const halfWidth = this._width / 2;
-    const halfHeight = this._height / 2;
+    const halfWidth = WIDTH / 2;
+    const quarterHeight = HEIGHT / 4;
     imageURLs.forEach((imageURL, i) => {
       const img = new Image();
       img.onload = () => {
-        this.setState(() => {
-          this._ctx.drawImage(img, (i % 2) * halfWidth, (Math.floor(i / 2) % 2) * halfHeight, halfWidth, halfHeight);
-          return { drawn: true };
+        this.setState(({ drawCount }) => {
+          this._ctx.drawImage(img, 0, i * quarterHeight, halfWidth, quarterHeight);
+          this._ctx.drawImage(img, halfWidth, i * quarterHeight, halfWidth, quarterHeight);
+          return { drawCount: drawCount + 1 };
         });
       };
       img.src = imageURL;
@@ -90,6 +92,10 @@ export default class PhotoSet extends Component<PhotoSetProps, PhotoSetState> {
 
 const styles = StyleSheet.create({
   root: {
-    flexGrow: 1
+    // flexGrow: 1
+  },
+  canvas: {
+    position: 'absolute',
+    left: '-999em'
   }
 });

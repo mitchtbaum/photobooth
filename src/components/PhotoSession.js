@@ -1,12 +1,12 @@
 // @flow
 import PhotoSet from './PhotoSet';
 import PhotoTimer from './PhotoTimer';
-import { Button, StyleSheet, View } from 'react-native';
-import React, { Component } from 'react';
+import { Button, Image, StyleSheet, View } from 'react-native';
+import React, { Component, Fragment } from 'react';
 
 import type { $ImageCapture } from '../types';
 
-type PhotoSessionProps = {
+type Props = {
   countdownMS: number,
   imageCapture: $ImageCapture,
   initialCountdownMS: number,
@@ -15,14 +15,14 @@ type PhotoSessionProps = {
   onPhotoTaken?: (imageURL: string, imageBlob: Blob) => void
 };
 
-type PhotoSessionState = {
+type State = {
   imageBlobs: Array<Blob>,
   imageURLs: Array<string>
 };
 
 const BETWEEN_TAKE_DELAY_MS = 1000;
 
-export default class PhotoSession extends Component<PhotoSessionProps, PhotoSessionState> {
+export default class PhotoSession extends Component<Props, State> {
   _timer: PhotoTimer;
   _photoset: PhotoSet;
 
@@ -32,7 +32,7 @@ export default class PhotoSession extends Component<PhotoSessionProps, PhotoSess
     initialCountdownMS: 3000
   };
 
-  constructor(props: PhotoSessionProps, context: any) {
+  constructor(props: Props, context: any) {
     super(props, context);
     this.state = {
       imageBlobs: [],
@@ -51,14 +51,17 @@ export default class PhotoSession extends Component<PhotoSessionProps, PhotoSess
     const { imageURLs } = this.state;
     return (
       <View style={styles.root}>
-        <View style={styles.timer} pointerEvents="none">
+        <View style={styles.timer} pointerEvents={imageURLs.length >= numPhotos ? 'auto' : 'none'}>
           {imageURLs.length >= numPhotos ? (
-            <Button onPress={this._handleComplete} title="Done" />
+            <Fragment>
+              <PhotoSet downloadable imageURLs={imageURLs} />
+              <Button onPress={this._handleComplete} title="Done" />
+            </Fragment>
           ) : (
             <PhotoTimer onTakePhoto={this._handleTakePhoto} ref={this._receiveTimerRef} />
           )}
         </View>
-        <PhotoSet downloadable={imageURLs.length === numPhotos} imageURLs={imageURLs} />
+        {imageURLs.map((imageURL) => <Image key={imageURL} source={imageURL} style={styles.image} />)}
       </View>
     );
   }
