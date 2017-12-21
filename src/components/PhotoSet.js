@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 
 type Props = {
   downloadable: boolean,
+  gutter: number,
   imageURLs: Array<string>
 };
 
@@ -14,13 +15,15 @@ type State = {
 
 const WIDTH = 1600;
 const HEIGHT = 2400;
+const GUTTER = 10;
 
 export default class PhotoSet extends Component<Props, State> {
   _ref: HTMLCanvasElement;
   _ctx: CanvasRenderingContext2D;
 
   static defaultProps = {
-    downloadable: false
+    downloadable: false,
+    gutter: GUTTER
   };
 
   constructor(props: Props, context: any) {
@@ -64,20 +67,25 @@ export default class PhotoSet extends Component<Props, State> {
   _receiveRef = (ref: ?HTMLCanvasElement) => {
     if (!this._ctx && ref) {
       this._ctx = ref.getContext('2d');
+      this._ctx.fillStyle = '#000000';
+      this._ctx.fillRect(0, 0, WIDTH, HEIGHT);
       this._ref = ref;
     }
   };
 
   _draw = () => {
-    const { imageURLs } = this.props;
+    const { gutter, imageURLs } = this.props;
     const halfWidth = WIDTH / 2;
     const quarterHeight = HEIGHT / 4;
+    const width = halfWidth - gutter * 2;
+    const height = quarterHeight - gutter * 2;
     imageURLs.forEach((imageURL, i) => {
       const img = new Image();
       img.onload = () => {
         this.setState(({ drawCount }) => {
-          this._ctx.drawImage(img, 0, i * quarterHeight, halfWidth, quarterHeight);
-          this._ctx.drawImage(img, halfWidth, i * quarterHeight, halfWidth, quarterHeight);
+          const yPos = i * quarterHeight + gutter;
+          this._ctx.drawImage(img, gutter, yPos, width, height);
+          this._ctx.drawImage(img, halfWidth + gutter, yPos, width, height);
           return { drawCount: drawCount + 1 };
         });
       };
