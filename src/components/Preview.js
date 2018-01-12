@@ -38,12 +38,12 @@ export default class Preview extends Component<Props> {
 
   _drawFrame = () => {
     const { imageCapture } = this.props;
-    const { aspectRatio, height, width } = imageCapture.track.getSettings();
+    const { height, width } = imageCapture.track.getSettings();
     if (this._ctx) {
       imageCapture
         .grabFrame()
         .then((imageBitmap) => {
-          this._ctx.drawImage(imageBitmap, 0, 0, width, height, 0, 0, this._width, this._width / aspectRatio);
+          this._ctx.drawImage(imageBitmap, 0, 0, width, height, 0, 0, this._width, this._width / (width / height));
         })
         .catch(() => {});
     }
