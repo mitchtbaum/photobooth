@@ -15,7 +15,7 @@
     "build": "react-scripts build",
     "precommit": "lint-staged",
     "predeploy": "npm run build",
-    "start": "react-scripts start",
+    "start": "HTTPS=true react-scripts start",
     "test": "react-scripts test --env=jsdom"
   },
   "devDependencies": {
